@@ -82,7 +82,7 @@ export default class MainView extends Component<Props> {
     return (
       <View style={styles.container}>
         <Image source={cover} style={{width: 300, height: 300, marginTop: 50}} />
-        <Text style={{color: "#FFF", fontSize: 20, marginTop: 10}}>AC/DC - Back in black</Text>
+        <Text style={{color: "#FFF", fontSize: 20, marginTop: 10}}>Bensound - High Octane</Text>
         <View style={styles.sliderContainer}>
           <Text style={styles.text}>{elapsedTime}</Text>
           <Slider
