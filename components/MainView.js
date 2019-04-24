@@ -1,9 +1,17 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, TouchableOpacity, Text, ScrollView, Image, Alert} from 'react-native';
+import {StyleSheet, View, Text, Image, ToastAndroid} from 'react-native';
 import Slider from '@react-native-community/slider';
 import Sound from "react-native-sound";
+import ControlsButton from "./ControlsButton";
 
 import cover from "./highoctane.jpg";
+import Play from "./Icons/play.png";
+import Pause from "./Icons/pause.png";
+import FastForward from "./Icons/fast_forward.png"
+import VolumeDown from "./Icons/Volume/volume_down.png";
+import VolumeMute from "./Icons/Volume/volume_mute.png";
+import VolumeOff from "./Icons/Volume/volume_off.png";
+import VolumeUp from "./Icons/Volume/volume_up.png";
 
 Sound.setCategory('Playback');
 type Props = {};
@@ -20,7 +28,8 @@ export default class MainView extends Component<Props> {
   state = {
     duration: 255,
     elapsed: 0,
-    isPlaying: false
+    isPlaying: false,
+    volume: 100
   };
 
   music: Sound = null;
@@ -56,6 +65,10 @@ export default class MainView extends Component<Props> {
     }
   };
 
+  onFastForwardClick = () => {
+    ToastAndroid.show('Ta funkcjonalność nie jest jeszcze wspierana', ToastAndroid.SHORT);
+  };
+
   updateCurrentTime = () => {
     const {isPlaying} = this.state;
     if (!isPlaying) return;
@@ -73,11 +86,33 @@ export default class MainView extends Component<Props> {
     this.music.setCurrentTime(newTime);
   };
 
+  setVolume = (newProgress) => {
+    const volume = newProgress * 100;
+    this.setState({volume: volume});
+    this.music.setVolume(newProgress);
+  };
+
+  getVolumeIcon = () => {
+    const {volume} = this.state;
+
+    if (volume === 0) {
+      return VolumeOff;
+    } else if (volume < 40) {
+      return VolumeMute;
+    } else if (volume < 75) {
+      return VolumeDown;
+    } else {
+      return VolumeUp;
+    }
+  };
+
   render() {
-    const {elapsed, duration, isPlaying} = this.state;
+    const {elapsed, duration, isPlaying, volume} = this.state;
 
     const durationTime = secondsToTime(duration);
     const elapsedTime = secondsToTime(elapsed);
+
+    const volumeIcon = this.getVolumeIcon();
 
     return (
       <View style={styles.container}>
@@ -97,11 +132,23 @@ export default class MainView extends Component<Props> {
           <Text style={styles.text}>{durationTime}</Text>
         </View>
         <View style={styles.controlsContainer}>
-          <TouchableOpacity style={styles.buttonOutline} onPress={this.onPlayPauseClick}>
-            <Text style={styles.playPauseButton}>
-              {isPlaying ? "||" : "▶"}
-            </Text>
-          </TouchableOpacity>
+          <ControlsButton icon={FastForward} onPress={this.onFastForwardClick}
+                          customIconStyle={{transform: [{rotate: '180deg'}]}} />
+          <ControlsButton icon={isPlaying ? Pause : Play} onPress={this.onPlayPauseClick} />
+          <ControlsButton icon={FastForward} onPress={this.onFastForwardClick} />
+        </View>
+        <View style={styles.volumeContainer}>
+          <Image source={volumeIcon} />
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            value={15}
+            maximumValue={1}
+            minimumTrackTintColor="#FFF"
+            maximumTrackTintColor="#000"
+            onValueChange={this.setVolume}
+          />
+          <Text style={styles.volumeText}>{volume.toFixed(0)}</Text>
         </View>
       </View>
     );
@@ -126,26 +173,39 @@ const styles = StyleSheet.create({
   text: {
     color: "#FFF"
   },
-  controlsContainer: {},
+  controlsContainer: {
+    marginTop: 20,
+    flexDirection: "row"
+  },
   buttonOutline: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FFF',
     justifyContent: "center",
+    backgroundColor: "#FFF",
     alignItems: "center"
   },
-  playPauseButton: {
-    color: "#FFF",
-    paddingTop: 3,
-    fontSize: 20,
+  buttonInside: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#282828',
     justifyContent: "center",
-    alignItems: "center",
-    textAlign: "center"
+    backgroundColor: "#282828",
+    alignItems: "center"
+  },
+  volumeContainer: {
+    flex: 1,
+    flexDirection: "row",
+    marginTop: 20,
+    width: 300,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  volumeText: {
+    color: "#FFF",
+    fontSize: 20,
+    textAlign: "left",
+    width: 40
   }
 });
 
